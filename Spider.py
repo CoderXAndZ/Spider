@@ -5,6 +5,7 @@
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
+from bs4 import BeautifulSoup
 
 # 浏览器
 wd = webdriver.Firefox()
@@ -14,9 +15,8 @@ current_window = wd.current_window_handle
 
 
 # 打开浏览器
-def open_firefox(page):
+def open_firefox(page, keywords):
     # url = 'https://www.baidu.com/s?wd=%E8%9E%8D%E6%89%98%E9%87%91%E8%9E%8D&pn=10&oq=%E8%9E%8D%E6%89%98%E9%87%91%E8%9E%8D&tn=monline_3_dg&ie=utf-8&usm=1&rsv_pq=8ef13f780000d1b5&rsv_t=f1a8letyGDxgzrFTe%2BTXGUVodY1icqi2d3bmB8S9WJqSkjL80kJTOnwlAdr6nkpPNWPb&rsv_page=1'
-
 
     global current_page
     url = 'https://www.baidu.com/baidu?tn=monline_3_dg&ie=utf-8&wd=%E8%9E%8D%E6%89%98%E9%87%91%E8%9E%8D'
@@ -25,8 +25,15 @@ def open_firefox(page):
         current_page = int(page)
         wd.get(url+page_num)
         wait = WebDriverWait(wd, timeout=13)
-        # # wait.until(expected_conditions.title_is("京东试用-专业的综合网上免费试用平台"))
+        # # wait.until(expected_conditions.title_is("平台"))
         # # wait.until(expected_conditions.element_to_be_clickable((By.CLASS_NAME, '.link-login'))
+
+        print("页面内容：", wd.page_source)
+        html_content = wd.page_source
+        soup = BeautifulSoup(html_content, 'html.parser')
+        # 获取公司的列表
+        companies = soup.find('div', id='content_left').select('ul > li')
+
     except NoSuchElementException as e:
         print("异常信息：", e.msg)
 
@@ -48,5 +55,5 @@ def is_element_exist(name, by_class):
 
 
 if __name__ == '__main__':
-    page_begin = input("请输入开始页码，没有输入0，点击enter：")
-    open_firefox(page_begin)
+    # page_begin = input("请输入开始页码，没有输入0，点击enter：")
+    open_firefox(0, '融托金融')
