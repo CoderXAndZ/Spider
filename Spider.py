@@ -61,55 +61,145 @@ def open_firefox(page, keywords, browser_type, enumValue):
                 print("title是：", title)
                 print("href链接是：", href)
                 print("abstract简介是：", abstract)
+                # 写入到txt 文档
                 create_txt_write_in(title, href, abstract, 'baiduSearchResult')
             # print("获取的数组：", array_result)
         elif enumValue == 'three_six_zero':  # 360
-            soup = BeautifulSoup(html_content, 'lxml')
-            # 获取内容列表
-            companies = soup.find('div', id='main').select('ul > li')
-            # print('获取内容列表：', companies)
-
-            array_result = []
-            for com in companies:
-                print("com：", com)
-                res = get_one_li_value(com)
-                array_result.append(res)
-
-            # title = companies[0].h3.a.contents
-            #     # find('h3', class_='res-title ')  # 题目  a.contents 获取链接的内容
-            # href = companies[0].h3.a['href']  # 链接
-            # abstract = companies[0].p.contents  # 内容
-            # print('title：', title)
-            # print('href：', href)
-            # print('abstract：', abstract)
-            # print('href:', href)
-            # print('abstract:', abstract)
-
-
-            # ul = wd.find_element_by_xpath('//*[@id="main"]/ul')
-            # li_lists = ul.find_elements_by_xpath('li')
-            # print("li_lists", li_lists)
+            # soup = BeautifulSoup(html_content, 'lxml')
+            # # 获取内容列表
+            # companies = soup.find('div', id='main').select('ul > li')
+            # # print('获取内容列表：', companies)
             #
-            # for li in li_lists:
-            #     link_a = li.find_elements_by_xpath("//h3[contains(@class, 'res-title ')]/a")
-            #     title = link_a[0].text
-            #     href = link_a
-            #
-            #     print("title:", title)
-            #     # for value in title:
-            #     #     print("title:", value.text)
-            #     # print("com:", com)
-            #     # res = get_one_li_value(com)
-            #     # array_result.append(res)
+            # array_result = []
+            # for com in companies:
+            #     print("com：", com)
+            #     res = get_one_li_value(com)
+            #     array_result.append(res)
+
+            feed_box = wd.find_element_by_xpath("//div[contains(@id, 'main')]")
+            result = feed_box.find_element_by_xpath("//ul[contains(@class, 'result')]")
+            print("360结果：", result)
+            # res-list
+            lis = result.find_elements_by_xpath("//li[contains(@class, 'res-list')]")
+
+            print("360的搜索结果lis：", lis)
+
+            for i in range(0, len(lis)):
+                title = lis[i].find_element_by_tag_name('h3').text
+                herf = lis[i].find_element_by_tag_name('h3').find_element_by_tag_name('a').get_attribute('href')
+
+                if title.endswith('360问答'):
+                    content = lis[i].find_element_by_xpath("//div[contains(@class, 'best-ans')]").text
+                else:
+                    content = lis[i].find_element_by_tag_name('p').text
+
+                print("title:", title)
+                print("content:", content)
+                print("链接：", herf)
+
+                # 写入到txt 文档
+                create_txt_write_in(title, herf, content, '360SearchResult')
 
         elif enumValue == 'search_dog':  # 搜狗
-            soup = BeautifulSoup(html_content, 'lxml')
-            print('搜狗')
+            print("搜狗")
+            feed_box = wd.find_element_by_xpath("//div[contains(@class, 'results')]")
+
+            rb_results = feed_box.find_elements_by_xpath("//div[contains(@class, 'rb')]")
+
+            vrwrap_results = feed_box.find_elements_by_xpath("//div[contains(@class, 'vrwrap')]")
+
+            print("长度：", len(rb_results), "搜狗结果：", rb_results )
+            print("长度：", len(vrwrap_results), "搜狗-----结果：", vrwrap_results)
+
+            for i in range(0, len(rb_results)):
+                pt = rb_results[i].find_element_by_xpath("//h3[contains(@class, 'pt')]")
+                title_rb = pt.text   # find_element_by_class_name('pt').text
+                if is_element_exist(pt, 'a', 2):
+                    href_rb = pt.find_element_by_tag_name('a').get_attribute(
+                        'href')  # find_element_by_class_name('pt').find_element_by_tag_name('a').get_attribute('href')
+                else:
+                    href_rb = "未获取到链接"
+                content_rb = rb_results[i].find_element_by_xpath("//div[contains(@class, 'ft')]").text  # find_element_by_class_name('ft').text
+
+                print("title:", title_rb)
+                print("content:", content_rb)
+                print("链接：", href_rb)
+
+                # 写入到txt 文档
+                create_txt_write_in(title_rb, href_rb, content_rb, 'dogSearchResult')
+
+
+            for j in range(0, len(vrwrap_results)):
+                vrTitle = vrwrap_results[j].find_element_by_class_name('vrTitle')
+                title = vrTitle.text
+                if is_element_exist(vrTitle, 'a', 2):
+                    href = vrTitle.find_element_by_tag_name('a').get_attribute('href')
+                else:
+                    href = "未获取到链接"
+                content = vrwrap_results[j].find_element_by_xpath("//p[contains(@class, 'str_info')]").text + \
+                          vrwrap_results[j].find_element_by_xpath('//ul').text
+
+                print("title:", title)
+                print("content:", content)
+                print("链接：", href)
+
+                # 写入到txt 文档
+                create_txt_write_in(title, href, content, 'dogSearchResult')
+
+
+            # # res-list
+            # lis = result.find_elements_by_xpath("//li[contains(@class, 'biz_rb ')]")
+            #
+            # print("搜狗的搜索结果lis：", lis)
+            #
+            # for i in range(0, len(lis)):
+            #     title = lis[i].find_element_by_tag_name('h3').text
+            #     herf = lis[i].find_element_by_tag_name('h3').find_element_by_tag_name('a').get_attribute('href')
+            #
+            #     if title.endswith('360问答'):
+            #         content = lis[i].find_element_by_xpath("//div[contains(@class, 'best-ans')]").text
+            #     else:
+            #         content = lis[i].find_element_by_tag_name('p').text
+            #
+            #     print("title:", title)
+            #     print("content:", content)
+            #     print("链接：", herf)
+            #
+            #     # 写入到txt 文档
+            #     create_txt_write_in(title, herf, content, 'dogSearchResult')
+
         else:  # 今日头条
-            print("今日头条")
-            sections = wd.find_elements_by_xpath("//div[contains(@class, 'articleCard')]")
+            print("今日头条")  # feedBox
+            feedBox = wd.find_element_by_xpath("//div[contains(@class, 'feedBox ')]")
+            sections = feedBox.find_element_by_xpath("//div[contains(@class, 'sections')]")
             # sections = wd.find_elements_by_class_name('articleCard')
             print('sections:', sections)
+            # articles = sections.findelements
+            # ".//*[@class='alert_information']/b"  "//div[contains(@class, 'articleCard')]"
+            divs = wd.find_elements_by_xpath(".//*[@class='articleCard']")
+            print("divs长度：", len(divs), 'divs:', divs)
+
+            for i in range(0, 10):
+                id_str = 'J_section_' + str(i)
+                path_str = str.format("//div[contains(@id, {0})]", id_str)
+                every_section = sections.find_element_by_xpath(path_str)
+
+                # div_a = every_section.find_element_by_xpath("//div[contains(@class, 'title-box')]").text
+                title = every_section.text
+
+                href = every_section.find_element_by_tag_name('a').get_attribute('href')
+
+                print("title：", title)
+                # print("div_a:", div_a)
+                print("href：", href)
+
+                # 写入到txt 文档
+                create_txt_write_in(title, href, '', 'todaySearchResult')
+
+                # a = every_section.find_element_by_xpath("//div[contains(@class, 'normal  ')]")
+
+                # print("每一个section：", every_section)
+
 
 
             # soup = BeautifulSoup(html_content, 'html.parser')
@@ -199,16 +289,22 @@ def create_txt_write_in(title, href, abstract, txt_name):
 
 
 # 判断元素是否存在
-def is_element_exist(name, by_class):
-    if by_class:
+def is_element_exist(tag, name, by_class):
+    if by_class == 1:
         try:
-            wd.find_element_by_class_name(name)
+            tag.find_element_by_class_name(name)
+            return True
+        except NoSuchElementException:
+            return False
+    elif by_class == 2:
+        try:
+            tag.find_element_by_tag_name(name)
             return True
         except NoSuchElementException:
             return False
     else:
         try:
-            wd.find_element_by_xpath(name)
+            tag.find_element_by_xpath(name)
             return True
         except NoSuchElementException:
             return False
